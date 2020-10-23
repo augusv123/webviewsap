@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Insumos</string>
+    <string name="url_sap">http://10.0.5.229:7000/</string>
+</resources>
+

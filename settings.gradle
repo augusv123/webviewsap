@@ -1,0 +1,2 @@
+rootProject.name='SAPWM'
+include ':app'

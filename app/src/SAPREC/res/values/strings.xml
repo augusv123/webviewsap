@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SAPREC</string>
+    <string name="url_sap">https://cup.gpv.com.ar/REC</string>
+</resources>
+
