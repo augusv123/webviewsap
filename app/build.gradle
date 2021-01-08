@@ -66,6 +66,22 @@ android {
             dimension "tier"
             applicationId 'com.example.myapp.PESP'
         }
+        SAPCALIDAD {
+            applicationId 'com.example.myapp.SAP'
+            versionName "3.2"
+        }
+        DEVOLUCIONES {
+            dimension "tier"
+            applicationId 'com.example.myapp.DEVOLUCIONES'
+        }
+        SDQAS {
+            dimension "tier"
+            applicationId 'com.example.myapp.SDQAS'
+        }
+        SDD{
+            dimension "tier"
+            applicationId 'com.example.myapp.SDD'
+        }
     }
 }
 

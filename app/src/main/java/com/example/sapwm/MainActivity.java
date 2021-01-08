@@ -4,13 +4,20 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
@@ -27,16 +34,30 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity  {
+import static com.example.sapwm.MainActivity.*;
+import static java.lang.Thread.sleep;
+
+public class MainActivity extends AppCompatActivity implements NetworkChangeReceiver.ConnectionChangeCallback {
     private WebView webView;
     private WebSettings webSettings;
     private ProgressBar mProgressBar;
     private final int SPLASH_DISPLAY_LENGTH = 1000;
     private Button botonlogout;
+    private String errorUrl;
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        IntentFilter intentFilter = new
+                IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+
+        NetworkChangeReceiver networkChangeReceiver = new NetworkChangeReceiver();
+
+        registerReceiver(networkChangeReceiver, intentFilter);
+
+        networkChangeReceiver.setConnectionChangeCallback(this);
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -90,7 +111,7 @@ public class MainActivity extends AppCompatActivity  {
 
 
     }
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+ /*     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onResume() {
         super.onResume();
@@ -108,7 +129,7 @@ public class MainActivity extends AppCompatActivity  {
 
 
         android.webkit.CookieManager.getInstance().setCookie(".vhpirqs1ci.hec.grupopiero.com", "SAP_SESSIONID_QS1_200=");*/
-        webView = (WebView)findViewById(R.id.webView);
+   /*       webView = (WebView)findViewById(R.id.webView);
         webView.setWebViewClient(new WebViewClient());
         webView.setWebViewClient(new MyWebViewClientGPV());
         webView.loadUrl(getString(R.string.url_sap));
@@ -116,7 +137,7 @@ public class MainActivity extends AppCompatActivity  {
               webSettings.setBuiltInZoomControls(false);
         webSettings.setDisplayZoomControls(true);
 
-    }
+    } */
     @RequiresApi(api = Build.VERSION_CODES.M)
 
 
@@ -124,16 +145,75 @@ public class MainActivity extends AppCompatActivity  {
     public void onBackPressed() {
 
     }
+
+    @Override
+    public void onConnectionChange(boolean isConnected) {
+        if(isConnected) {
+            // will be called when internet is back
+            Toast.makeText(this, "se conecto!", Toast.LENGTH_SHORT).show();
+            /*    webView.loadUrl(errorUrl);*/
+            Toast.makeText(this, "url: " + errorUrl, Toast.LENGTH_LONG).show();
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            webView.setVisibility(View.VISIBLE);
+
+        }
+        else{
+            // will be called when internet is gone.
+
+            Toast.makeText(this, "se desconecto!", Toast.LENGTH_SHORT).show();
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            //hide element
+
+            webView.setVisibility(View.GONE);//makes it disappear
+        }
+    }
+
+
     public class MyWebViewClientGPV extends WebViewClient{
+
+
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+
+
         @Override
+
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
 
+               /*     view.loadUrl("file:///android_asset/error.html");*/
+            Toast.makeText(MainActivity.this, request.getUrl().toString() , Toast.LENGTH_LONG).show();
+            errorUrl=   request.getUrl().toString();
 
+            Log.e("tag",errorUrl);
             /*            view.loadData(customHtml, "text/html", "UTF-8");*/
-            view.loadUrl("file:///android_asset/error.html");
+
+
 
         }
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            String s  = "false";
+            Log.e("entro","siii entro");
+
+            if (!DetectConnection.checkInternetConnection(MainActivity.this)) {
+                s = "true";
+                Toast.makeText(getApplicationContext(), "No Internet!", Toast.LENGTH_LONG).show();
+            } else {
+                view.loadUrl(url);
+            }
+            Log.e("conection",s);
+
+            return true;
+        }
+
+        @Override
+        public void onFormResubmission(WebView view, Message dontResend, Message resend) {
+            super.onFormResubmission(view, dontResend, resend);
+
+        }
+
+
         public void onProgressChanged(WebView view, int progress) {
             if(progress < 100 && mProgressBar.getVisibility() == ProgressBar.GONE){
                 mProgressBar.setVisibility(ProgressBar.VISIBLE);
@@ -148,11 +228,7 @@ public class MainActivity extends AppCompatActivity  {
         }
         @Override
         public void onPageFinished(WebView view, String url) {
-            String javascript="javascript:document.getElementsByName('viewport')[0].setAttribute('content', 'initial-scale=1.0,maximum-scale=10.0');";
-            String javascript2="javascript: document.getElementByName('sap-user')[0].value = 'Joh';";
-            String javascript3="javascript:document.getElementsByID('sap-user').value = 'augusto';";
 
-            view.loadUrl(javascript);
         }
 
         @Nullable
@@ -161,5 +237,6 @@ public class MainActivity extends AppCompatActivity  {
             return super.shouldInterceptRequest(view, request);
         }
     }
+
 
 }

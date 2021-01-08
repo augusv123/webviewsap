@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">SAP</string>
-    <string name="url_sap">https://cup.gpv.com.ar/WM</string>
+    <string name="url_sap">https://cup.gpv.com.ar/PROD</string>
 </resources>
 
